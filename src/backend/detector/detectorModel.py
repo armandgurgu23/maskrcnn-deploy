@@ -1,0 +1,4 @@
+
+
+class MaskRCNNModelWrapper(object):
+    pass
