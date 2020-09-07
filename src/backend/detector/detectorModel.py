@@ -1,4 +1,20 @@
+import torchvision.models as models
 
 
 class MaskRCNNModelWrapper(object):
-    pass
+    def __init__(self, pretrained, minSize=400):
+        self.pretrained = pretrained
+        self.minSize = minSize
+        self.maskRCNNModel = self.initializeMaskRCNNModel(self.pretrained, self.minSize)
+        # Set the pretrained model in inference mode since model
+        # uses batch normalization.
+        self.maskRCNNModel.eval()
+        print('Finished initializing mask rcnn object detector!')
+
+    def __call__(self, predictImage):
+        # Call method for now returns raw predictions. Adjust
+        # output format later.
+        return self.maskRCNNModel(predictImage)
+
+    def initializeMaskRCNNModel(self, pretrained, minSize):
+        return models.detection.maskrcnn_resnet50_fpn(pretrained=pretrained, min_size=minSize)
