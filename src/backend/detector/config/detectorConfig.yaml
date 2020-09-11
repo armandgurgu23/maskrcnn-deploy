@@ -1,2 +1,5 @@
 detectorModel:
   minSize: 400
+  staticPredictions: True
+  staticPredictionsInputPath: 'sampleImages/'
+  staticPredictionsOutputPath: 'outputImages/'

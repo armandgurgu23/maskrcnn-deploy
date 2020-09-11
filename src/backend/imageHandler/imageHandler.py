@@ -7,5 +7,18 @@
 
 
 class ImageHandler(object):
-    def __init__(self):
+    def __init__(self, staticPredictions):
+        self.staticPredictions = staticPredictions
+
+    def __call__(self, staticPredictionsPath=None, dynamicImagePath=None):
+        if self.staticPredictions:
+            return self.runStaticPredictionsHandler(staticPredictionsPath)
+        else:
+            return self.runDynamicPredictionsHandler(dynamicImagePath)
+
+    def runStaticPredictionsHandler(self, staticPredictionsPath):
         pass
+
+    def runDynamicPredictionsHandler(self, dynamicImagePath):
+        raise NotImplementedError(
+            'Revisit this once frontend is implemented for image upload and transmission.')
