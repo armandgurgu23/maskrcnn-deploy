@@ -15,6 +15,7 @@ class ConfigDefaults(object):
         _config.detectorModel = CN()
         _config.detectorModel.pretrained = True
         _config.detectorModel.minSize = 100
+        _config.detectorModel.predictionClassesPath = ''
         _config.detectorModel.staticPredictions = True
         _config.detectorModel.staticPredictionsConfig = CN()
         _config.detectorModel.staticPredictionsConfig.staticPredictionsInputPath = ''
