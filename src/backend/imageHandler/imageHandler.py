@@ -7,11 +7,30 @@
 import os
 import PIL
 from PIL import Image
+import torchvision
+from torchvision import transforms
 
 
 class ImageHandler(object):
     def __init__(self, staticPredictions):
         self.staticPredictions = staticPredictions
+        self.imagePreprocessor = self.initializeImageTransformer()
+
+    def initializeImageTransformer(self):
+        return transforms.Compose(self.getImageTransforms())
+
+    def getImageTransforms(self):
+        transformsArray = []
+        transformsArray.append(self.getPILImageToTorchTensorTransform())
+        # To do: Add other image transforms later if different vision
+        # models require them. (add below)
+        return transformsArray
+
+    def getPILImageToTorchTensorTransform(self):
+        # This transform converts a PIL Image object
+        # to a torch.Tensor and normalizes pixel intensities
+        # to [0,1] range.
+        return transforms.ToTensor()
 
     def __call__(self, staticPredictionsPath=None, dynamicImagePath=None):
         if self.staticPredictions:
@@ -22,7 +41,19 @@ class ImageHandler(object):
     def runStaticPredictionsHandler(self, staticPredictionsPath):
         imagePaths = self.getImageFilenamesFromPath(staticPredictionsPath)
         imageObjects = self.openImagesFromImageFiles(imagePaths, staticPredictionsPath)
-        raise NotImplementedError('Finish code for image handler here!')
+        imageObjects = self.preprocessPILImages(imageObjects)
+        return imageObjects
+
+    def runDynamicPredictionsHandler(self, dynamicImagePath):
+        raise NotImplementedError(
+            'Revisit this once frontend is implemented for image upload and transmission.')
+
+    def preprocessPILImages(self, imageObjects):
+        processedImages = []
+        for currImage in imageObjects:
+            currProcessedImage = self.imagePreprocessor(currImage)
+            processedImages.append(currProcessedImage)
+        return processedImages
 
     def openImagesFromImageFiles(self, imagePaths, staticPredictionsPath):
         imageObjects = []
@@ -40,7 +71,3 @@ class ImageHandler(object):
             allFiles)
         os.chdir(currPath)
         return allFiles
-
-    def runDynamicPredictionsHandler(self, dynamicImagePath):
-        raise NotImplementedError(
-            'Revisit this once frontend is implemented for image upload and transmission.')

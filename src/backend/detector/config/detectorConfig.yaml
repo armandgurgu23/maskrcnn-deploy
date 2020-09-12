@@ -1,5 +1,7 @@
 detectorModel:
   minSize: 400
   staticPredictions: True
-  staticPredictionsInputPath: 'sampleImages/'
-  staticPredictionsOutputPath: 'outputImages/'
+  confidenceThreshold: 0.9
+  staticPredictionsConfig:
+    staticPredictionsInputPath: 'sampleImages/'
+    staticPredictionsOutputPath: 'outputImages/'

@@ -14,7 +14,11 @@ class MaskRCNNModelWrapper(object):
     def __call__(self, predictImage):
         # Call method for now returns raw predictions. Adjust
         # output format later.
-        return self.maskRCNNModel(predictImage)
+        rawPredictions = self.maskRCNNModel(predictImage)
+        print(rawPredictions)
+        print('\nThe raw predictions are above!\n')
+        raise NotImplementedError('Barrier to output! Add predictions processing handler.')
+        # return
 
     def initializeMaskRCNNModel(self, pretrained, minSize):
         return models.detection.maskrcnn_resnet50_fpn(pretrained=pretrained, min_size=minSize)
