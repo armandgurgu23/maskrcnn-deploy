@@ -15,16 +15,48 @@ class MaskRCNNModelWrapper(object):
         self.maskRCNNModel.eval()
         print('Finished initializing mask rcnn object detector!')
 
-    def __call__(self, predictImage):
+    def __call__(self, predictImage, confidenceThreshold):
         # Call method for now returns raw predictions. Adjust
         # output format later.
         rawPredictions = self.maskRCNNModel(predictImage)
-        print(rawPredictions)
-        print('\nThe raw predictions are above!\n')
-        print(self.classesArray)
-        print('\n\nThe vocabulary is shown above!\n\n')
-        raise NotImplementedError('Barrier to output! Add predictions processing handler.')
-        # return
+        return self.extractValidPredictions(rawPredictions, confidenceThreshold)
+
+    def extractValidPredictions(self, rawPredictions, confidenceThreshold):
+        # A valid prediction is defined as a prediction whose
+        # confidence score is greater than the confidenceThreshold
+        # hyperparameter.
+        validPredictionData = []
+        return self.extractBoxesAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
+
+    def extractBoxesAndLabels(self, validPredictionData, rawPredictions, confidenceThreshold):
+        if len(rawPredictions) == 1:
+            singlePredictionData = self.extractSingleInstanceBoxesAndLabels(
+                rawPredictions[0], confidenceThreshold)
+            return validPredictionData.append(singlePredictionData)
+        elif len(rawPredictions) > 1:
+            for currPrediction in rawPredictions:
+                currPredictionData = self.extractSingleInstanceBoxesAndLabels(
+                    currPrediction, confidenceThreshold)
+                validPredictionData.append(currPredictionData)
+            return validPredictionData
+        else:
+            raise IndexError(
+                'Detector model returned an empty prediction array! Unexpected behaviour!')
+
+    def extractSingleInstanceBoxesAndLabels(self, singlePrediction, confidenceThreshold):
+        predIndexMask = singlePrediction['scores'] > confidenceThreshold
+        # Need to convert boxes from float to int in order to
+        # draw them on the images.
+        validBoxes = singlePrediction['boxes'][predIndexMask].int().detach().tolist()
+        validClassIndexes = singlePrediction['labels'][predIndexMask].tolist()
+        validClassNames = self.mapClassIndexesToClassNames(validClassIndexes)
+        return validBoxes, validClassNames
+
+    def mapClassIndexesToClassNames(self, validClassIndexes):
+        validClassNames = []
+        for currIndex in validClassIndexes:
+            validClassNames.append(self.classesArray[currIndex])
+        return validClassNames
 
     def initializeMaskRCNNModel(self, pretrained, minSize):
         return models.detection.maskrcnn_resnet50_fpn(pretrained=pretrained, min_size=minSize)
