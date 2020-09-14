@@ -1,0 +1,6 @@
+imagePainter:
+  boxWidth: 10
+  textPixelShift: 15
+  textStrokeWidth: 2
+  colorChoice: 'random'
+  colorFile: 'imagePainter/config/painterColors.txt'
