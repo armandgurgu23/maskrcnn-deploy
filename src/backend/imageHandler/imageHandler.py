@@ -71,3 +71,10 @@ class ImageHandler(object):
             allFiles)
         os.chdir(currPath)
         return allFiles
+
+    def transformTorchImageToPIL(self, imageArrayTorch):
+        imageArrayPil = []
+        pilImageMapper = transforms.ToPILImage()
+        for currImage in imageArrayTorch:
+            imageArrayPil.append(pilImageMapper(currImage))
+        return imageArrayPil

@@ -25,14 +25,30 @@ class ImagePainter(object):
         return
 
     def drawPredictionsOnImages(self, imageList, predictionData):
-        for imageIndex, currImage in imageList:
+        for imageIndex, currImage in enumerate(imageList):
             currDrawColor = self.colorSampler()
-            currCanvas = ImageDraw.Draw()
+            currCanvas = ImageDraw.Draw(currImage)
+            imagePredData = predictionData[imageIndex]
             # To Do: Complete logic in this function.
-        pass
+            self.drawPredictionsOnCanvas(currCanvas, imagePredData, currDrawColor)
+        return
 
-    def drawBoxesOnCanvas(self, currCanvas, predictedBoxes):
-        pass
+    def drawPredictionsOnCanvas(self, currCanvas, predictionData, currDrawColor):
+        predictedBoxes = predictionData[0]
+        predictedClasses = predictionData[1]
+        for currBox in predictedBoxes:
+            leftCorner = self.extractLeftCornerCoordinates(currBox)
+            self.drawBoundingBox(currCanvas, currBox, currDrawColor)
+            # Insert code to draw the class names after this line.
+        return
+
+    def drawBoundingBox(self, currCanvas, box, color):
+        currCanvas.rectangle(box, outline=color, width=self.boxWidth)
+        return
+
+    def extractLeftCornerCoordinates(self, box):
+        # Returned as a (x,y) tuple.
+        return box[0], box[1]
 
     def sampleColorFromColorSpace(self):
         return random.choice(self.colorSpace)
