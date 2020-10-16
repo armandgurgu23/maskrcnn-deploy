@@ -21,12 +21,12 @@ class ModelServer(object):
         predictionData = self.detectorWrapper(
             uploadedImage, self.detectorConfig.detectorModel.confidenceThreshold)
         uploadedImage = self.imageHandlerWrapper.transformTorchImageToPIL(uploadedImage)
-        # To Do: QA drawing ordinary bounding boxes bug.
-        # self.imagePainterWrapper(uploadedImage, predictionData)
-        # self.imagePainterWrapper.showImages(uploadedImage)
-        # print('The final predicted image is this: \n')
-        # print(uploadedImage)
-        return
+        # To do: Add ability to draw predicted class name.
+        self.imagePainterWrapper(uploadedImage, predictionData)
+        self.imagePainterWrapper.showImages(uploadedImage)
+        # To do: add a way to map the PIL Image object back to a file-like
+        # object before returning.
+        return uploadedImage
 
     def getModelConfigurations(self):
         detectorConfig = getDetectorYamlConfig()

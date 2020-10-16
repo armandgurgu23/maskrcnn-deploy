@@ -36,10 +36,22 @@ class ImagePainter(object):
     def drawPredictionsOnCanvas(self, currCanvas, predictionData, currDrawColor):
         predictedBoxes = predictionData[0]
         predictedClasses = predictionData[1]
-        for currBox in predictedBoxes:
+        for indexPred, currBox in enumerate(predictedBoxes):
+            print('Pred index {} has box {}'.format(indexPred, currBox))
             leftCorner = self.extractLeftCornerCoordinates(currBox)
+            leftCorner = self.applyPixelShiftToTextCoordinates(leftCorner, self.textPixelShift)
             self.drawBoundingBox(currCanvas, currBox, currDrawColor)
-            # Insert code to draw the class names after this line.
+            # predClass = predictedClasses[indexPred]
+            # print('Pred index {} has class {}'.format(indexPred, predClass))
+            # self.drawPredictedClassForBox(predClass, leftCorner, currCanvas, currDrawColor)
+        return
+
+    def applyPixelShiftToTextCoordinates(self, corner, pixelShift):
+        return corner[0], corner[1] - pixelShift
+
+    def drawPredictedClassForBox(self, className, textCorner, currCanvas, textColor):
+        currCanvas.text(xy=textCorner, text=className, fill=textColor,
+                        stroke_width=self.textStrokeWidth)
         return
 
     def drawBoundingBox(self, currCanvas, box, color):
