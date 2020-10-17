@@ -32,7 +32,8 @@ class MaskRCNNModelWrapper(object):
         if len(rawPredictions) == 1:
             singlePredictionData = self.extractSingleInstanceBoxesAndLabels(
                 rawPredictions[0], confidenceThreshold)
-            return validPredictionData.append(singlePredictionData)
+            validPredictionData.append(singlePredictionData)
+            return validPredictionData
         elif len(rawPredictions) > 1:
             for currPrediction in rawPredictions:
                 currPredictionData = self.extractSingleInstanceBoxesAndLabels(

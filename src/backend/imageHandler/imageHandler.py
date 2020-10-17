@@ -45,8 +45,9 @@ class ImageHandler(object):
         return imageObjects
 
     def runDynamicPredictionsHandler(self, dynamicImagePath):
-        raise NotImplementedError(
-            'Revisit this once frontend is implemented for image upload and transmission.')
+        imageObjects = self.openImageFromFileObject(dynamicImagePath)
+        imageObjects = self.preprocessPILImages(imageObjects)
+        return imageObjects
 
     def preprocessPILImages(self, imageObjects):
         processedImages = []
@@ -54,6 +55,14 @@ class ImageHandler(object):
             currProcessedImage = self.imagePreprocessor(currImage)
             processedImages.append(currProcessedImage)
         return processedImages
+
+    def openImageFromFileObject(self, fileObject):
+        # Mask RCNN detector expects a list of images as input.
+        # for a single image we package that image in an empty list.
+        imageObjects = []
+        uploadedImage = Image.open(fileObject)
+        imageObjects.append(uploadedImage)
+        return imageObjects
 
     def openImagesFromImageFiles(self, imagePaths, staticPredictionsPath):
         imageObjects = []
