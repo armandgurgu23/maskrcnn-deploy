@@ -1,0 +1,9 @@
+/* 
+    color:transparent can be used to hide the "No file chosen" text
+    from the input type=File.
+*/
+input[type=file] {
+    width: 6%;
+    border: 2px solid blue;
+    color: transparent;
+}

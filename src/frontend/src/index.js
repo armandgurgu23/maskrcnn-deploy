@@ -4,6 +4,10 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+//Armand: This is the main script! ReactDOM.render is responsible
+//for rendering the entire front-end. In this case it renders
+//the App functional component.
+
 ReactDOM.render(
   <React.StrictMode>
     <App />
