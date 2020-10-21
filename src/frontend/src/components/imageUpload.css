@@ -7,3 +7,8 @@
 input[type=file] {
     display: none;
 }
+
+#uploadButton {
+    width: 7%;
+    background-color: yellow;
+}
