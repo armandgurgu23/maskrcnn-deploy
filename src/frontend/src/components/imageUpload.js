@@ -6,6 +6,7 @@ class ImageUpload extends React.Component {
     constructor(props) {
         super(props);
         this.state = {uploadPath:null};
+        this.inputRef = React.createRef();
     }
 
 
@@ -18,7 +19,7 @@ class ImageUpload extends React.Component {
 
     handleButtonClick = () => {
         console.log('Inside handleButtonClick! state = ', this.state);
-        let inputElem = document.getElementById("uploadInput");
+        const inputElem = this.inputRef.current;
         inputElem.click();
     }
 
@@ -40,7 +41,7 @@ class ImageUpload extends React.Component {
         return (
         <div id='Image Handler Container'>
             <div id='Upload Image Container'>
-                <input id="uploadInput" type="file" accept='image/png,image/jpeg,image/jpg' onChange={this.handleInputChange}></input>
+                <input id="uploadInput" ref={this.inputRef} type="file" accept='image/png,image/jpeg,image/jpg' onChange={this.handleInputChange}></input>
                 <button id="uploadButton" onClick={this.handleButtonClick}>Upload Image</button>
             </div>
             {renderImageContainer}
