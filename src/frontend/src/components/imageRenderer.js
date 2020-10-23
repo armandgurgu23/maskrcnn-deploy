@@ -1,4 +1,5 @@
 import React from 'react';
+import PredictionFetcher from './predictionFetcher';
 class ImageRenderer extends React.Component {
     constructor(props) {
         super(props);
@@ -23,9 +24,15 @@ class ImageRenderer extends React.Component {
         return;
     }
 
+    //Need to fix if statement to allow for other uploaded image renderings.
+
     handleImgElementRender = () => {
         if (this.state !== null && this.state.hasOwnProperty('imageContents')) {
-            return <img height="600" width="600" src={this.state.imageContents}></img>
+            return <div>
+                        <img height="600" width="600" src={this.state.imageContents}></img>
+                        <PredictionFetcher imageFile={this.props.imageFile}/>
+                    </div>
+                
         }
     }
 
