@@ -1,11 +1,41 @@
 import fastapi
+import os
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from modelServer import ModelServer
 # Create the FastAPI application server.
 server = FastAPI()
 modelService = ModelServer()
 
+# A list of all the front-end origins that are allowed to access the server.
+# We choose them depending on the development mode flag:
+def fetchServerAllowedOrigins():
+    if os.environ['SERVER_MODE'] == 'dev':
+        # In dev mode we only allow localhost connections!
+        # to-do: the front-end endpoint has to be
+        # exposed to back-end to allow it as
+        # an origin.
+        # Alternatively, find a way to expose
+        # all localhost port numbers in dev mode.
+        allowedOrigins = ['http://localhost:3000']
+    else:
+        allowedOrigins = ['*']
+    return allowedOrigins
+
+def setupCORSMiddleware(server):
+    allowedOrigins = fetchServerAllowedOrigins()
+    # Can specify certain types of HTTP methods to allow (ie: just POST/GET etc.)
+    # As well as different credentials like authorization headers/cookies etc.
+    # Same applies for HTTP headers.
+    print('Origins allowed to access backend: {}'.format(allowedOrigins))
+    server.add_middleware(CORSMiddleware, allow_origins=allowedOrigins,
+                                          allow_credentials=True,
+                                          allow_methods=["*"],
+                                          allow_headers=["*"])
+    return
+
+setupCORSMiddleware(server)
 
 @server.get('/healthcheck')
 def healthcheck():

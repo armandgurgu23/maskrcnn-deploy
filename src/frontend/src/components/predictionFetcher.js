@@ -9,7 +9,6 @@ class PredictionFetcher extends React.Component {
         //TO-DO: move these to a JSON configuration file
         //later.
         this.modelBackendIP = 'http://localhost:6969';
-        // this.modelBackendIP = 'http://0.0.0.0:6969'
         this.serverPath = '/healthcheck';
     }
 
