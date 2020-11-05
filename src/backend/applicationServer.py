@@ -2,7 +2,7 @@ import fastapi
 import os
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from modelServer import ModelServer
 # Create the FastAPI application server.
 server = FastAPI()
@@ -67,5 +67,6 @@ def root():
 def uploadImage(imageFile: UploadFile = File(...)):
     # print('Executing the POST method: uploadImage!')
     # print('Can I see the model: {}'.format(modelService))
-    predictionsImage = modelService(imageFile.file)
-    return {'imageUploaded': imageFile.filename, 'contentType': imageFile.content_type}
+    imageExtension = imageFile.content_type.split('/')[-1]
+    predictionsImage = modelService(imageFile.file, imageExtension)
+    return StreamingResponse(predictionsImage, media_type=imageFile.content_type)
