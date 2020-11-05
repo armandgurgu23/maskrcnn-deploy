@@ -63,7 +63,7 @@ def root():
 # (The returned image will be the image with the drawn predictions)!
 
 
-@server.post('/uploadImage/')
+@server.post('/uploadImage')
 def uploadImage(imageFile: UploadFile = File(...)):
     # print('Executing the POST method: uploadImage!')
     # print('Can I see the model: {}'.format(modelService))
