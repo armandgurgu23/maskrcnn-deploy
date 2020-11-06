@@ -1,6 +1,6 @@
 import React from 'react';
+import ImageUpload from './components/imageUpload';
 import './App.css';
-import ImageUpload from './components/imageUpload'
 
 //App is a functional component that represents the entire application code.
 

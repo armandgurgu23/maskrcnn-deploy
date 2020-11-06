@@ -13,7 +13,6 @@ class PredictionFetcher extends React.Component {
     }
 
     renderPredictionButton = () => {
-        console.log('Props passed to Prediction Fetcher: ', this.props);
         return <form onSubmit={this.handleFormSubmit}>
             <button id='predictionButton' type='submit'> Run Object Detector </button>
         </form> 
@@ -27,10 +26,14 @@ class PredictionFetcher extends React.Component {
         //imageFile represents the keyname expected
         //by the backend server.
         imageFormWrapper.append('imageFile', imageFile);
+        // If request is interpreted as blob, it can
+        // be passed in directly to the callback
+        // of the image renderer component.
         const payloadConfig = {
             headers: {
                 'Content-Type': 'multipart/form-data'
-            }
+            },
+            responseType: 'blob'
         }
         const payloadInfo = {form: imageFormWrapper, config: payloadConfig}
         return payloadInfo;
@@ -38,7 +41,8 @@ class PredictionFetcher extends React.Component {
 
     sendImageToServer = async (imageForm, backendURL, requestHeader) => {
         let response = await axios.post(backendURL, imageForm, requestHeader);
-        console.log('This is the response I got back from backend: ', response);
+        console.log('Axios response: ', response);
+        this.setState({predictionsImage:response.data})
     }
 
     handleFormSubmit = (event) => {
@@ -57,12 +61,15 @@ class PredictionFetcher extends React.Component {
     }
 
     componentDidUpdate = (prevProp, prevState) => {
-        console.log('Previous prop = ', prevProp);
-        console.log('Previous state = ', prevState);
-        console.log('Curr State = ', this.state);
-        console.log('Curr prop = ', this.props);
+        // This method is trigerred by an update which 
+        // can be caused by changes to props or state.
+        // It runs after render().
+        console.log('Prediction Fetcher component did update keeps RUN!')
+        if (this.state !== null && prevProp.imageFile.name === this.props.imageFile.name) {
+            this.props.imageRenderCallback(this.state.predictionsImage);
+            this.setState(null);
+        }        
     }
-
 
     render() {
         return this.renderPredictionButton();

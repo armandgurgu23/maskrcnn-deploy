@@ -23,9 +23,8 @@ class ModelServer(object):
         uploadedImage = self.imageHandlerWrapper.transformTorchImageToPIL(uploadedImage)
         # To do: Add ability to draw predicted class name.
         self.imagePainterWrapper(uploadedImage, predictionData)
-        self.imagePainterWrapper.showImages(uploadedImage)
-        # To do: add a way to map the PIL Image object back to a file-like
-        # object before returning.
+        # Helpful method to visualize predictions on the backend side.
+        # self.imagePainterWrapper.showImages(uploadedImage)
         return self.serializeImageToResponseByteString(uploadedImage, imageExtension)
     
     def serializeImageToResponseByteString(self, uploadedImage, extension):
@@ -33,6 +32,9 @@ class ModelServer(object):
         # data. The input data to BytesIO must be a byte-string.
         imageBuffer = io.BytesIO()
         uploadedImage[0].save(imageBuffer, format=extension)
+        # Apparently seek(0) is needed if you are using PIL/Skimage.
+        # https://stackoverflow.com/questions/55873174/how-do-i-return-an-image-in-fastapi/55905051#55905051
+        imageBuffer.seek(0)
         return imageBuffer
 
     def getModelConfigurations(self):

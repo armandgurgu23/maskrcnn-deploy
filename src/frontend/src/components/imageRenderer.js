@@ -8,6 +8,7 @@ class ImageRenderer extends React.Component {
     }
 
     handleImageLoading = (event) => {
+        console.log('handleImageLoading: event --> ', event)
         this.setState({imageContents:event.target.result})
     }
 
@@ -26,13 +27,23 @@ class ImageRenderer extends React.Component {
 
     //Need to fix if statement to allow for other uploaded image renderings.
 
-    handleImgElementRender = () => {
+    handleImgElementRender = (prevState) => {
         if (this.state !== null && this.state.hasOwnProperty('imageContents')) {
             return <div>
                         <img height="600" width="600" src={this.state.imageContents}></img>
-                        <PredictionFetcher imageFile={this.props.imageFile}/>
+                        <PredictionFetcher imageFile={this.props.imageFile} imageRenderCallback={this.handleImageReading}/>
                     </div>
                 
+        }
+    }
+
+    componentDidUpdate = (prevProp, prevState) => {
+        // This method is trigerred by an update which 
+        // can be caused by changes to props or state.
+        // It runs after render().
+        if (this.props.imageFile.name !== prevProp.imageFile.name) {
+            this.handleImageReading(this.props.imageFile);
+            this.handleImgElementRender()
         }
     }
 
