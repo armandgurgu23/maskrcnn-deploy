@@ -13,10 +13,12 @@ class PredictionFetcher extends React.Component {
     }
 
     renderPredictionButton = () => {
-        return <form onSubmit={this.handleFormSubmit}>
-            <button id='predictionButton' type='submit'> Run Object Detector </button>
-        </form> 
-    }
+        return <div id='Prediction Fetcher'> 
+                    <form onSubmit={this.handleFormSubmit}>
+                        <button id='predictionButton' type='submit'> Run Object Detector </button>
+                    </form> 
+            </div>;
+        }
 
     packageImageAsFormData = (imageFile) => {
         //To send an image to a backend server
@@ -42,7 +44,7 @@ class PredictionFetcher extends React.Component {
     sendImageToServer = async (imageForm, backendURL, requestHeader) => {
         let response = await axios.post(backendURL, imageForm, requestHeader);
         console.log('Axios response: ', response);
-        this.setState({predictionsImage:response.data})
+        this.setState({predictionsImage:response.data, predictionsName:this.props.imageFile.name})
     }
 
     handleFormSubmit = (event) => {
@@ -65,10 +67,16 @@ class PredictionFetcher extends React.Component {
         // can be caused by changes to props or state.
         // It runs after render().
         console.log('Prediction Fetcher component did update keeps RUN!')
-        if (this.state !== null && prevProp.imageFile.name === this.props.imageFile.name) {
-            this.props.imageRenderCallback(this.state.predictionsImage);
-            this.setState(null);
-        }        
+        if (this.state) {
+            if (!prevState){
+                this.props.imageRenderCallback(this.state.predictionsImage);
+            }
+            else {
+                if (this.state.predictionsName !== prevState.predictionsName) {
+                    this.props.imageRenderCallback(this.state.predictionsImage);
+                }
+            }
+        }
     }
 
     render() {

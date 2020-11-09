@@ -29,6 +29,7 @@ class ImageRenderer extends React.Component {
 
     handleImgElementRender = (prevState) => {
         if (this.state !== null && this.state.hasOwnProperty('imageContents')) {
+            console.log('Will render PredictionFetcher!!!!')
             return <div>
                         <img height="600" width="600" src={this.state.imageContents}></img>
                         <PredictionFetcher imageFile={this.props.imageFile} imageRenderCallback={this.handleImageReading}/>
@@ -43,7 +44,6 @@ class ImageRenderer extends React.Component {
         // It runs after render().
         if (this.props.imageFile.name !== prevProp.imageFile.name) {
             this.handleImageReading(this.props.imageFile);
-            this.handleImgElementRender()
         }
     }
 
