@@ -1,0 +1,14 @@
+/* 
+    color:transparent can be used to hide the "No file chosen" text
+    from the input type=File. To Do: Update description of the
+    solution with respect to CSS here and style the upload
+    button!
+*/
+input[type=file] {
+    display: none;
+}
+
+#uploadButton {
+    width: 7%;
+    background-color: yellow;
+}
