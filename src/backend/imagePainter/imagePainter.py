@@ -1,15 +1,19 @@
 import PIL
-from PIL import ImageDraw
+from PIL import ImageDraw, ImageFont
 import random
 
 
 class ImagePainter(object):
-    def __init__(self, boxWidth, textPixelShift, textStrokeWidth, colorChoice, colorFilePath):
+    def __init__(self, boxWidth, textPixelShiftWidth, textPixelShiftHeight, textStrokeWidth, colorChoice, colorFilePath, fontSize, fontName, fontRefWidth):
         self.boxWidth = boxWidth
-        self.textPixelShift = textPixelShift
+        self.textPixelShiftWidth = textPixelShiftWidth
+        self.textPixelShiftHeight = textPixelShiftHeight
         self.textStrokeWidth = textStrokeWidth
         self.colorChoice = colorChoice
         self.colorFilePath = colorFilePath
+        self.fontSize = fontSize
+        self.fontName = fontName
+        self.fontRefWidth = fontRefWidth
         # Open the list of colors that can be sampled for drawing.
         if self.colorChoice == 'random':
             # Fetch a color sampling method.
@@ -23,39 +27,53 @@ class ImagePainter(object):
     def __call__(self, imageList, predictionData):
         self.drawPredictionsOnImages(imageList, predictionData)
         return
+    
+    def initializeTextFontConfig(self, fontName, fontSize):
+        return ImageFont.truetype(fontName, fontSize)
+    
+    def computeDynamicTextFontConfig(self,fontName,fontSize,fontRefWidth, imageWidth):
+        # Code to setup the text font object settings was borrowed from here:
+        # https://stackoverflow.com/questions/4902198/pil-how-to-scale-text-size-in-relation-to-the-size-of-the-image
+        scaledFontSize = int((imageWidth * fontSize) / fontRefWidth)
+        return self.initializeTextFontConfig(fontName, scaledFontSize)
 
     def drawPredictionsOnImages(self, imageList, predictionData):
         for imageIndex, currImage in enumerate(imageList):
+            imageResolution = currImage.size
             currDrawColor = self.colorSampler()
             currCanvas = ImageDraw.Draw(currImage)
             imagePredData = predictionData[imageIndex]
             # To Do: Complete logic in this function.
-            self.drawPredictionsOnCanvas(currCanvas, imagePredData, currDrawColor)
+            self.drawPredictionsOnCanvas(currCanvas, imagePredData, currDrawColor, imageResolution)
         return
 
-    def drawPredictionsOnCanvas(self, currCanvas, predictionData, currDrawColor):
+    def drawPredictionsOnCanvas(self, currCanvas, predictionData, currDrawColor, currResolution):
         predictedBoxes = predictionData[0]
         predictedClasses = predictionData[1]
         for indexPred, currBox in enumerate(predictedBoxes):
-            print('Pred index {} has box {}'.format(indexPred, currBox))
             leftCorner = self.extractLeftCornerCoordinates(currBox)
-            leftCorner = self.applyPixelShiftToTextCoordinates(leftCorner, self.textPixelShift)
-            self.drawBoundingBox(currCanvas, currBox, currDrawColor)
-            # predClass = predictedClasses[indexPred]
+            leftCorner = self.applyPixelShiftToTextCoordinates(leftCorner, self.textPixelShiftHeight, self.textPixelShiftWidth, currResolution)
+            self.drawBoundingBox(currCanvas, currBox, currDrawColor, currResolution)
+            predClass = predictedClasses[indexPred]
             # print('Pred index {} has class {}'.format(indexPred, predClass))
-            # self.drawPredictedClassForBox(predClass, leftCorner, currCanvas, currDrawColor)
+            fontObject = self.computeDynamicTextFontConfig(fontName=self.fontName, fontSize=self.fontSize, fontRefWidth=self.fontRefWidth, imageWidth=currResolution[0])
+            self.drawPredictedClassForBox(predClass, leftCorner, currCanvas, currDrawColor, currResolution, fontObject)
         return
 
-    def applyPixelShiftToTextCoordinates(self, corner, pixelShift):
-        return corner[0], corner[1] - pixelShift
+    def applyPixelShiftToTextCoordinates(self, corner, pixelShiftHeight, pixelShiftWidth, currResolution):
+        yCoordinateShift = int(currResolution[1] * pixelShiftHeight)
+        xCoordinateShift = int(currResolution[0] * pixelShiftWidth)
+        return corner[0] - xCoordinateShift, corner[1] - yCoordinateShift
 
-    def drawPredictedClassForBox(self, className, textCorner, currCanvas, textColor):
+    def drawPredictedClassForBox(self, className, textCorner, currCanvas, textColor, currResolution, fontConfig):
+        scaledStrokeWidth = int(currResolution[0] * self.textStrokeWidth)
         currCanvas.text(xy=textCorner, text=className, fill=textColor,
-                        stroke_width=self.textStrokeWidth)
+                        stroke_width=scaledStrokeWidth, font=fontConfig)
         return
 
-    def drawBoundingBox(self, currCanvas, box, color):
-        currCanvas.rectangle(box, outline=color, width=self.boxWidth)
+    def drawBoundingBox(self, currCanvas, box, color, currResolution):
+        scaledBoxWidth = int(currResolution[0] / self.boxWidth)
+        currCanvas.rectangle(box, outline=color, width=scaledBoxWidth)
         return
 
     def extractLeftCornerCoordinates(self, box):

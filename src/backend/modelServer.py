@@ -54,7 +54,11 @@ class ModelServer(object):
 
     def initializeImagePainterWrapper(self, painterConfig):
         return ImagePainter(boxWidth=painterConfig.imagePainter.boxWidth,
-                            textPixelShift=painterConfig.imagePainter.textPixelShift,
+                            textPixelShiftWidth=painterConfig.imagePainter.textPixelShiftWidth,
+                            textPixelShiftHeight=painterConfig.imagePainter.textPixelShiftHeight,
                             textStrokeWidth=painterConfig.imagePainter.textStrokeWidth,
                             colorChoice=painterConfig.imagePainter.colorChoice,
-                            colorFilePath=painterConfig.imagePainter.colorFile)
+                            colorFilePath=painterConfig.imagePainter.colorFile,
+                            fontSize=painterConfig.imagePainter.fontSize,
+                            fontName=painterConfig.imagePainter.fontName,
+                            fontRefWidth=painterConfig.imagePainter.fontRefWidth)

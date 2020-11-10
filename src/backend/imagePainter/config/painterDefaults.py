@@ -14,10 +14,14 @@ class ConfigDefaults(object):
         _config = CN()
         _config.imagePainter = CN()
         _config.imagePainter.boxWidth = 1
-        _config.imagePainter.textPixelShift = 1
-        _config.imagePainter.textStrokeWidth = 1
+        _config.imagePainter.textPixelShiftWidth = 0.1
+        _config.imagePainter.textPixelShiftHeight = 0.1
+        _config.imagePainter.textStrokeWidth = 0.1
         _config.imagePainter.colorChoice = ''
         _config.imagePainter.colorFile = ''
+        _config.imagePainter.fontName = ''
+        _config.imagePainter.fontRefWidth = 10
+        _config.imagePainter.fontSize = 1
         return _config.clone()
 
 

@@ -1,6 +1,10 @@
 imagePainter:
-  boxWidth: 8
-  textPixelShift: 150
-  textStrokeWidth: 100
+  boxWidth: 100
+  textPixelShiftHeight: 0.062
+  textPixelShiftWidth: 0.02
+  textStrokeWidth: 0.0001
+  fontName: 'arial.ttf'
+  fontSize: 24
+  fontRefWidth: 1000
   colorChoice: 'random'
   colorFile: 'imagePainter/config/painterColors.txt'
