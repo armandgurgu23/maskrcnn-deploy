@@ -12,11 +12,14 @@ class PredictionFetcher extends React.Component {
         this.serverPath = '/uploadImage';
     }
 
-    renderPredictionButton = () => {
-        return <div id='Prediction Fetcher'> 
-                    <form onSubmit={this.handleFormSubmit}>
-                        <button id='predictionButton' type='submit'> Run Object Detector </button>
+    renderPredictionButtons = () => {
+        return <div id='Prediction Fetchers'> 
+                    <form onSubmit={this.handleDetectorFormSubmit}>
+                        <button id='predictionButtonDetector' type='submit'> Run Object Detector </button>
                     </form> 
+                    <form onSubmit={this.handleSegmentorFormSubmit}>
+                        <button id='predictionButtonSegmentor' type='submit'> Run Object Segmentor </button>
+                    </form>
             </div>;
         }
 
@@ -47,7 +50,7 @@ class PredictionFetcher extends React.Component {
         this.setState({predictionsImage:response.data, predictionsName:this.props.imageFile.name})
     }
 
-    handleFormSubmit = (event) => {
+    handleDetectorFormSubmit = (event) => {
         console.log('Detected a form submit! Event = ', event);
         //We are disabling the form element's default submission behaviour
         //and allowing axios to handle the communication for simplicity.
@@ -55,6 +58,10 @@ class PredictionFetcher extends React.Component {
         let backendURL = this.getBackendURL(this.modelBackendIP, this.serverPath);
         let payloadInfo = this.packageImageAsFormData(this.props.imageFile);
         this.sendImageToServer(payloadInfo.form, backendURL, payloadInfo.config);
+    }
+
+    handleSegmentorFormSubmit = (event) => {
+        console.log('Detected a form submit! ', event);
     }
 
     getBackendURL = (backendIP, serverPath) => {
@@ -80,7 +87,7 @@ class PredictionFetcher extends React.Component {
     }
 
     render() {
-        return this.renderPredictionButton();
+        return this.renderPredictionButtons();
     }
 }
 

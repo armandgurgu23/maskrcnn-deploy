@@ -25,7 +25,6 @@ class ImageRenderer extends React.Component {
         return;
     }
 
-    //Need to fix if statement to allow for other uploaded image renderings.
 
     handleImgElementRender = (prevState) => {
         if (this.state !== null && this.state.hasOwnProperty('imageContents')) {
