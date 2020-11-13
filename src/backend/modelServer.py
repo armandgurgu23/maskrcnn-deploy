@@ -16,7 +16,7 @@ class ModelServer(object):
         self.imagePainterWrapper = self.initializeImagePainterWrapper(self.painterConfig)
         print('Object detection model ready for serving!')
 
-    def __call__(self, imageFileObject, imageExtension):
+    def __call__(self, imageFileObject, imageExtension, predictionType):
         uploadedImage = self.imageHandlerWrapper(dynamicImagePath=imageFileObject)
         predictionData = self.detectorWrapper(
             uploadedImage, self.detectorConfig.detectorModel.confidenceThreshold)

@@ -2,7 +2,7 @@ import fastapi
 import os
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from modelServer import ModelServer
 # Create the FastAPI application server.
 server = FastAPI()
@@ -39,21 +39,21 @@ setupCORSMiddleware(server)
 
 @server.get('/healthcheck')
 def healthcheck():
-    return "Mask-RCNN deployment server is healthy!"
-
-
-@server.get('/')
-def root():
     # From experimentation, we cannot test the uploadImage functionality
     # until we set up an HTML form that can be used to upload images/files
     # In the HTML form, the action parameter refers to the URL where
     # the content is processed?!?!?!
     htmlContent = """
 <body>
-<h1> Welcome to the Mask-RCNN demo deployment example! </h1>
+<h1> Welcome to the Mask-RCNN demo backend server! </h1>
+<h2> Mask-RCNN deployed backend server is healthy! </h2>
 </body>
     """
     return HTMLResponse(htmlContent)
+
+@server.get('/')
+def root():
+    return RedirectResponse('/healthcheck')
 
 
 # Note from Armand: You do NOT need the frontend code for now to test the backend.
@@ -63,10 +63,17 @@ def root():
 # (The returned image will be the image with the drawn predictions)!
 
 
-@server.post('/uploadImage')
+@server.post('/detector')
 def uploadImage(imageFile: UploadFile = File(...)):
-    # print('Executing the POST method: uploadImage!')
-    # print('Can I see the model: {}'.format(modelService))
+    print('Handling a detector request!')
     imageExtension = imageFile.content_type.split('/')[-1]
-    predictionsImage = modelService(imageFile.file, imageExtension)
+    predictionsImage = modelService(imageFile.file, imageExtension, 'detector')
+    return StreamingResponse(predictionsImage, media_type=imageFile.content_type)
+
+
+@server.post('/segmentor')
+def uploadImage(imageFile: UploadFile = File(...)):
+    print('Handling a segmentor request!')
+    imageExtension = imageFile.content_type.split('/')[-1]
+    predictionsImage = modelService(imageFile.file, imageExtension, 'segmentor')
     return StreamingResponse(predictionsImage, media_type=imageFile.content_type)

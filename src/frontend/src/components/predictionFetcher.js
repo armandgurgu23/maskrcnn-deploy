@@ -9,7 +9,8 @@ class PredictionFetcher extends React.Component {
         //TO-DO: move these to a JSON configuration file
         //later.
         this.modelBackendIP = 'http://localhost:6969';
-        this.serverPath = '/uploadImage';
+        this.detectorPath = '/detector';
+        this.segmentorPath = '/segmentor';
     }
 
     renderPredictionButtons = () => {
@@ -51,17 +52,23 @@ class PredictionFetcher extends React.Component {
     }
 
     handleDetectorFormSubmit = (event) => {
-        console.log('Detected a form submit! Event = ', event);
+        console.log('Detected a detector form submit! Event = ', event);
         //We are disabling the form element's default submission behaviour
         //and allowing axios to handle the communication for simplicity.
         event.preventDefault();
-        let backendURL = this.getBackendURL(this.modelBackendIP, this.serverPath);
+        let backendURL = this.getBackendURL(this.modelBackendIP, this.detectorPath);
         let payloadInfo = this.packageImageAsFormData(this.props.imageFile);
         this.sendImageToServer(payloadInfo.form, backendURL, payloadInfo.config);
     }
 
     handleSegmentorFormSubmit = (event) => {
-        console.log('Detected a form submit! ', event);
+        console.log('Detected a segmentor form submit! Event = ', event);
+        //We are disabling the form element's default submission behaviour
+        //and allowing axios to handle the communication for simplicity.
+        event.preventDefault();
+        let backendURL = this.getBackendURL(this.modelBackendIP, this.segmentorPath);
+        let payloadInfo = this.packageImageAsFormData(this.props.imageFile);
+        this.sendImageToServer(payloadInfo.form, backendURL, payloadInfo.config);
     }
 
     getBackendURL = (backendIP, serverPath) => {
