@@ -22,7 +22,7 @@ class ModelServer(object):
             uploadedImage, self.detectorConfig.detectorModel.confidenceThreshold, predictorType)
         uploadedImage = self.imageHandlerWrapper.transformTorchImageToPIL(uploadedImage)
         # To do: Add ability to draw predicted class name.
-        self.imagePainterWrapper(uploadedImage, predictionData)
+        self.imagePainterWrapper(uploadedImage, predictionData, predictorType)
         # Helpful method to visualize predictions on the backend side.
         # self.imagePainterWrapper.showImages(uploadedImage)
         return self.serializeImageToResponseByteString(uploadedImage, imageExtension)

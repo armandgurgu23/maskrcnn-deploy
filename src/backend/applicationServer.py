@@ -1,15 +1,27 @@
-import fastapi
 import os
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from modelServer import ModelServer
+import logging
 # Create the FastAPI application server.
 server = FastAPI()
 modelService = ModelServer()
 
+
+def getApplicationLogger():
+    # We use the built-in uvicorn logger that comes
+    # out of the box when setting up a FastAPI 
+    # server.
+    return logging.getLogger("uvicorn.info")
+
+
+applicationLogger = getApplicationLogger()
+
 # A list of all the front-end origins that are allowed to access the server.
 # We choose them depending on the development mode flag:
+
+
 def fetchServerAllowedOrigins():
     if os.environ['SERVER_MODE'] == 'dev':
         # In dev mode we only allow localhost connections!
@@ -28,7 +40,7 @@ def setupCORSMiddleware(server):
     # Can specify certain types of HTTP methods to allow (ie: just POST/GET etc.)
     # As well as different credentials like authorization headers/cookies etc.
     # Same applies for HTTP headers.
-    print('Origins allowed to access backend: {}'.format(allowedOrigins))
+    applicationLogger.info('Origins allowed to access backend: {}'.format(allowedOrigins))
     server.add_middleware(CORSMiddleware, allow_origins=allowedOrigins,
                                           allow_credentials=True,
                                           allow_methods=["*"],
@@ -64,16 +76,16 @@ def root():
 
 
 @server.post('/detector')
-def uploadImage(imageFile: UploadFile = File(...)):
-    print('Handling a detector request!')
+def runObjectDetector(imageFile: UploadFile = File(...)):
+    applicationLogger.info('Handling a detector request!')
     imageExtension = imageFile.content_type.split('/')[-1]
     predictionsImage = modelService(imageFile.file, imageExtension, 'detector')
     return StreamingResponse(predictionsImage, media_type=imageFile.content_type)
 
 
 @server.post('/segmentor')
-def uploadImage(imageFile: UploadFile = File(...)):
-    print('Handling a segmentor request!')
+def runObjectSegmentor(imageFile: UploadFile = File(...)):
+    applicationLogger.info('Handling a segmentor request!')
     imageExtension = imageFile.content_type.split('/')[-1]
     predictionsImage = modelService(imageFile.file, imageExtension, 'segmentor')
     return StreamingResponse(predictionsImage, media_type=imageFile.content_type)

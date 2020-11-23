@@ -1,5 +1,5 @@
 import PIL
-from PIL import ImageDraw, ImageFont
+from PIL import ImageDraw, ImageFont, ImageOps
 import random
 
 
@@ -24,9 +24,22 @@ class ImagePainter(object):
             # be used for drawing.
             self.colorSpace = self.colorChoice
 
-    def __call__(self, imageList, predictionData):
-        self.drawPredictionsOnImages(imageList, predictionData)
-        return
+    def __call__(self, imageList, predictionData, predictorType):
+        if predictorType == 'segmentor':
+            paintedImage = self.drawMaskPredictionsOnImages(imageList, predictionData)
+            return paintedImage
+        else:
+            self.drawBoxPredictionsOnImages(imageList, predictionData)
+            return
+        
+    def drawMaskPredictionsOnImages(self, imageList, predictionData):
+        for imageIndex, currImage in enumerate(imageList):
+            imageResolution = currImage.size
+            currDrawColor = self.colorSampler()
+            imagePredictedMasks = predictionData[imageIndex]
+            print(imagePredictedMasks)
+            print('Current pred data above!!')
+        raise NotImplementedError('Inside image painter! Preparing to draw masks!')
     
     def initializeTextFontConfig(self, fontName, fontSize):
         return ImageFont.truetype(fontName, fontSize)
@@ -37,7 +50,7 @@ class ImagePainter(object):
         scaledFontSize = int((imageWidth * fontSize) / fontRefWidth)
         return self.initializeTextFontConfig(fontName, scaledFontSize)
 
-    def drawPredictionsOnImages(self, imageList, predictionData):
+    def drawBoxPredictionsOnImages(self, imageList, predictionData, predictorType):
         for imageIndex, currImage in enumerate(imageList):
             imageResolution = currImage.size
             currDrawColor = self.colorSampler()
