@@ -2,10 +2,13 @@ import torchvision.models as models
 
 
 class MaskRCNNModelWrapper(object):
-    def __init__(self, pretrained, classesPath, minSize=400):
+    def __init__(self, pretrained, classesPath, applyMaskProcessor, minSize=400):
         self.pretrained = pretrained
         self.minSize = minSize
         self.classesPath = classesPath
+        # This boolean applies a post-processor on the predicted mask-rcnn binary
+        # masks.
+        self.applyMaskProcessor = applyMaskProcessor
         # Get the list of prediction classes for mapping the prediction
         # indexes to the semantic class name.
         self.classesArray = self.getModelPredictionClasses(self.classesPath)
@@ -15,18 +18,45 @@ class MaskRCNNModelWrapper(object):
         self.maskRCNNModel.eval()
         print('Finished initializing mask rcnn object detector!')
 
-    def __call__(self, predictImage, confidenceThreshold):
+    def __call__(self, predictImage, confidenceThreshold, predictorType):
         # Call method for now returns raw predictions. Adjust
         # output format later.
         rawPredictions = self.maskRCNNModel(predictImage)
-        return self.extractValidPredictions(rawPredictions, confidenceThreshold)
+        return self.extractValidPredictions(rawPredictions, confidenceThreshold, predictorType)
 
-    def extractValidPredictions(self, rawPredictions, confidenceThreshold):
+    def extractValidPredictions(self, rawPredictions, confidenceThreshold, predictorType):
         # A valid prediction is defined as a prediction whose
         # confidence score is greater than the confidenceThreshold
         # hyperparameter.
         validPredictionData = []
-        return self.extractBoxesAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
+        if predictorType == "segmentor":
+            rawPredictionData = self.extractMasksAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
+            if self.applyMaskProcessor:
+                processedPredictionData = self.applyMaskProcessorOnPredictedObjectMasks(rawPredictionData)
+                return processedPredictionData
+            else:
+                return rawPredictionData
+        else:
+            return self.extractBoxesAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
+    
+    def applyMaskProcessorOnPredictedObjectMasks(self,rawPredictionData):
+        raise NotImplementedError('Insert code for applying object mask post-processing here!')
+    
+    def extractMasksAndLabels(self,validPredictionData, rawPredictions, confidenceThreshold):
+        if len(rawPredictions) == 1:
+            singlePredictionData = self.extractSingleInstanceBoxesAndLabels(
+                rawPredictions[0], confidenceThreshold, 'masks')
+            validPredictionData.append(singlePredictionData)
+            return validPredictionData
+        elif len(rawPredictions) > 1:
+            for currPrediction in rawPredictions:
+                currPredictionData = self.extractSingleInstanceBoxesAndLabels(
+                    currPrediction, confidenceThreshold, 'masks')
+                validPredictionData.append(currPredictionData)
+            return validPredictionData
+        else:
+            raise IndexError(
+                'Object segmentor model returned an empty prediction array! Unexpected behaviour!')
 
     def extractBoxesAndLabels(self, validPredictionData, rawPredictions, confidenceThreshold):
         if len(rawPredictions) == 1:
@@ -44,14 +74,17 @@ class MaskRCNNModelWrapper(object):
             raise IndexError(
                 'Detector model returned an empty prediction array! Unexpected behaviour!')
 
-    def extractSingleInstanceBoxesAndLabels(self, singlePrediction, confidenceThreshold):
+    def extractSingleInstanceBoxesAndLabels(self, singlePrediction, confidenceThreshold, predictionType='boxes'):
         predIndexMask = singlePrediction['scores'] > confidenceThreshold
         # Need to convert boxes from float to int in order to
         # draw them on the images.
-        validBoxes = singlePrediction['boxes'][predIndexMask].int().detach().tolist()
+        if predictionType == 'boxes':
+            validPredictions = singlePrediction[predictionType][predIndexMask].int().detach().tolist()
+        else:
+            validPredictions = singlePrediction[predictionType][predIndexMask, :,:,:].detach()
         validClassIndexes = singlePrediction['labels'][predIndexMask].tolist()
         validClassNames = self.mapClassIndexesToClassNames(validClassIndexes)
-        return validBoxes, validClassNames
+        return validPredictions, validClassNames
 
     def mapClassIndexesToClassNames(self, validClassIndexes):
         validClassNames = []

@@ -1,5 +1,5 @@
-from detector.detectorModel import MaskRCNNModelWrapper
-from detector.config.detectorDefaults import getDetectorYamlConfig
+from maskRCNN.modelWrapper import MaskRCNNModelWrapper
+from maskRCNN.config.modelDefaults import getModelYamlConfig
 from imagePainter.config.painterDefaults import getPainterYamlConfig
 from imageHandler.imageHandler import ImageHandler
 from imagePainter.imagePainter import ImagePainter
@@ -16,10 +16,10 @@ class ModelServer(object):
         self.imagePainterWrapper = self.initializeImagePainterWrapper(self.painterConfig)
         print('Object detection model ready for serving!')
 
-    def __call__(self, imageFileObject, imageExtension, predictionType):
+    def __call__(self, imageFileObject, imageExtension, predictorType):
         uploadedImage = self.imageHandlerWrapper(dynamicImagePath=imageFileObject)
         predictionData = self.detectorWrapper(
-            uploadedImage, self.detectorConfig.detectorModel.confidenceThreshold)
+            uploadedImage, self.detectorConfig.detectorModel.confidenceThreshold, predictorType)
         uploadedImage = self.imageHandlerWrapper.transformTorchImageToPIL(uploadedImage)
         # To do: Add ability to draw predicted class name.
         self.imagePainterWrapper(uploadedImage, predictionData)
@@ -38,7 +38,7 @@ class ModelServer(object):
         return imageBuffer
 
     def getModelConfigurations(self):
-        detectorConfig = getDetectorYamlConfig()
+        detectorConfig = getModelYamlConfig()
         painterConfig = getPainterYamlConfig()
         return detectorConfig, painterConfig
 
@@ -46,7 +46,8 @@ class ModelServer(object):
         return MaskRCNNModelWrapper(
             pretrained=detectorConfig.detectorModel.pretrained,
             minSize=detectorConfig.detectorModel.minSize,
-            classesPath=detectorConfig.detectorModel.predictionClassesPath)
+            classesPath=detectorConfig.detectorModel.predictionClassesPath,
+            applyMaskProcessor=detectorConfig.segmentorModel.applyMaskProcessor)
 
     def initializeImageHandlerWrapper(self, detectorConfig):
         return ImageHandler(
