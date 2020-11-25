@@ -1,6 +1,8 @@
 import PIL
 from PIL import ImageDraw, ImageFont, ImageOps
 import random
+from torchvision.transforms import ToPILImage
+from imagePainter.maskProcessor.maskProcessor import MaskProcessor
 
 
 class ImagePainter(object):
@@ -13,6 +15,7 @@ class ImagePainter(object):
         self.colorFilePath = colorFilePath
         self.fontSize = fontSize
         self.fontName = fontName
+        self.torchToPILConverter = ToPILImage()
         self.fontRefWidth = fontRefWidth
         # Open the list of colors that can be sampled for drawing.
         if self.colorChoice == 'random':
@@ -33,13 +36,33 @@ class ImagePainter(object):
             return
         
     def drawMaskPredictionsOnImages(self, imageList, predictionData):
+        paintedImages = []
         for imageIndex, currImage in enumerate(imageList):
-            imageResolution = currImage.size
             currDrawColor = self.colorSampler()
-            imagePredictedMasks = predictionData[imageIndex]
-            print(imagePredictedMasks)
-            print('Current pred data above!!')
+            imagePredictions = predictionData[imageIndex]
+            self.drawObjectMasksAndClasses(imagePredictions[0], imagePredictions[1], currDrawColor, currImage)
         raise NotImplementedError('Inside image painter! Preparing to draw masks!')
+
+    def drawObjectMasksAndClasses(self, objectMasks, objectClasses, drawColor, currImage):
+        for currMaskIndex in range(objectMasks.size()[0]):
+            currObjectMask = objectMasks[currMaskIndex,:,:,:]
+            currImage = self.drawObjectMask(currObjectMask, currImage, drawColor)
+        return
+    
+    def drawObjectMask(self,currMask, currImage, drawColor):
+        currMaskPIL = self.transformMaskToPILImage(currMask)
+        coloredMask = self.applyColorToObjectMask(currMaskPIL, drawColor)
+        coloredMask.show()
+        return
+
+    def applyColorToObjectMask(self, currMask, drawColor):
+        # We can set the pixels corresponding to the background pixels
+        # in the object mask to any color since our aim is for those
+        # regions to be opaque in the alpha blending process.
+        return ImageOps.colorize(currMask, black='white', white=drawColor)
+
+    def transformMaskToPILImage(self,currMask):
+        return self.torchToPILConverter(currMask)
     
     def initializeTextFontConfig(self, fontName, fontSize):
         return ImageFont.truetype(fontName, fontSize)
@@ -50,7 +73,7 @@ class ImagePainter(object):
         scaledFontSize = int((imageWidth * fontSize) / fontRefWidth)
         return self.initializeTextFontConfig(fontName, scaledFontSize)
 
-    def drawBoxPredictionsOnImages(self, imageList, predictionData, predictorType):
+    def drawBoxPredictionsOnImages(self, imageList, predictionData):
         for imageIndex, currImage in enumerate(imageList):
             imageResolution = currImage.size
             currDrawColor = self.colorSampler()

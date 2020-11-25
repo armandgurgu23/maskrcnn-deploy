@@ -21,8 +21,6 @@ class ConfigDefaults(object):
         _config.detectorModel.staticPredictionsConfig.staticPredictionsInputPath = ''
         _config.detectorModel.staticPredictionsConfig.staticPredictionsOutputPath = ''
         _config.detectorModel.confidenceThreshold = 0.1
-        _config.segmentorModel = CN()
-        _config.segmentorModel.applyMaskProcessor = False
         return _config.clone()
 
 

@@ -22,6 +22,9 @@ class ConfigDefaults(object):
         _config.imagePainter.fontName = ''
         _config.imagePainter.fontRefWidth = 10
         _config.imagePainter.fontSize = 1
+        _config.imagePainter.objectMasks = CN()
+        _config.imagePainter.objectMasks.applyMaskProcessor = False
+        _config.imagePainter.objectMasks.objectTransparencyFactor = 0.1
         return _config.clone()
 
 

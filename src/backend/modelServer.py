@@ -46,8 +46,7 @@ class ModelServer(object):
         return MaskRCNNModelWrapper(
             pretrained=detectorConfig.detectorModel.pretrained,
             minSize=detectorConfig.detectorModel.minSize,
-            classesPath=detectorConfig.detectorModel.predictionClassesPath,
-            applyMaskProcessor=detectorConfig.segmentorModel.applyMaskProcessor)
+            classesPath=detectorConfig.detectorModel.predictionClassesPath)
 
     def initializeImageHandlerWrapper(self, detectorConfig):
         return ImageHandler(

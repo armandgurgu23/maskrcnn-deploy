@@ -2,13 +2,10 @@ import torchvision.models as models
 
 
 class MaskRCNNModelWrapper(object):
-    def __init__(self, pretrained, classesPath, applyMaskProcessor, minSize=400):
+    def __init__(self, pretrained, classesPath, minSize=400):
         self.pretrained = pretrained
         self.minSize = minSize
         self.classesPath = classesPath
-        # This boolean applies a post-processor on the predicted mask-rcnn binary
-        # masks.
-        self.applyMaskProcessor = applyMaskProcessor
         # Get the list of prediction classes for mapping the prediction
         # indexes to the semantic class name.
         self.classesArray = self.getModelPredictionClasses(self.classesPath)
@@ -30,17 +27,9 @@ class MaskRCNNModelWrapper(object):
         # hyperparameter.
         validPredictionData = []
         if predictorType == "segmentor":
-            rawPredictionData = self.extractMasksAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
-            if self.applyMaskProcessor:
-                processedPredictionData = self.applyMaskProcessorOnPredictedObjectMasks(rawPredictionData)
-                return processedPredictionData
-            else:
-                return rawPredictionData
+            return self.extractMasksAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
         else:
             return self.extractBoxesAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
-    
-    def applyMaskProcessorOnPredictedObjectMasks(self,rawPredictionData):
-        raise NotImplementedError('Insert code for applying object mask post-processing here!')
     
     def extractMasksAndLabels(self,validPredictionData, rawPredictions, confidenceThreshold):
         if len(rawPredictions) == 1:
