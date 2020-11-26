@@ -11,22 +11,28 @@ import io
 class ModelServer(object):
     def __init__(self):
         self.detectorConfig, self.painterConfig = self.getModelConfigurations()
-        self.detectorWrapper = self.initializeDetectorWrapper(self.detectorConfig)
-        self.imageHandlerWrapper = self.initializeImageHandlerWrapper(self.detectorConfig)
-        self.imagePainterWrapper = self.initializeImagePainterWrapper(self.painterConfig)
+        self.detectorWrapper = self.initializeDetectorWrapper(
+            self.detectorConfig)
+        self.imageHandlerWrapper = self.initializeImageHandlerWrapper(
+            self.detectorConfig)
+        self.imagePainterWrapper = self.initializeImagePainterWrapper(
+            self.painterConfig)
         print('Object detection model ready for serving!')
 
     def __call__(self, imageFileObject, imageExtension, predictorType):
-        uploadedImage = self.imageHandlerWrapper(dynamicImagePath=imageFileObject)
+        uploadedImage = self.imageHandlerWrapper(
+            dynamicImagePath=imageFileObject)
         predictionData = self.detectorWrapper(
             uploadedImage, self.detectorConfig.detectorModel.confidenceThreshold, predictorType)
-        uploadedImage = self.imageHandlerWrapper.transformTorchImageToPIL(uploadedImage)
+        uploadedImage = self.imageHandlerWrapper.transformTorchImageToPIL(
+            uploadedImage)
         # To do: Add ability to draw predicted class name.
-        self.imagePainterWrapper(uploadedImage, predictionData, predictorType)
+        uploadedImage = self.imagePainterWrapper(
+            uploadedImage, predictionData, predictorType)
         # Helpful method to visualize predictions on the backend side.
         # self.imagePainterWrapper.showImages(uploadedImage)
         return self.serializeImageToResponseByteString(uploadedImage, imageExtension)
-    
+
     def serializeImageToResponseByteString(self, uploadedImage, extension):
         # io.BytesIO() can be used to stream any non-text
         # data. The input data to BytesIO must be a byte-string.
@@ -61,4 +67,7 @@ class ModelServer(object):
                             colorFilePath=painterConfig.imagePainter.colorFile,
                             fontSize=painterConfig.imagePainter.fontSize,
                             fontName=painterConfig.imagePainter.fontName,
+                            applyMaskProcessor=painterConfig.imagePainter.objectMasks.applyMaskProcessor,
+                            processorMethod=painterConfig.imagePainter.objectMasks.processorMethod,
+                            objectTransparencyFactor=painterConfig.imagePainter.objectMasks.objectTransparencyFactor,
                             fontRefWidth=painterConfig.imagePainter.fontRefWidth)

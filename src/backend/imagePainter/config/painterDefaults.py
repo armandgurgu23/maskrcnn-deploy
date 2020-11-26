@@ -25,6 +25,7 @@ class ConfigDefaults(object):
         _config.imagePainter.objectMasks = CN()
         _config.imagePainter.objectMasks.applyMaskProcessor = False
         _config.imagePainter.objectMasks.objectTransparencyFactor = 0.1
+        _config.imagePainter.objectMasks.processorMethod = ''
         return _config.clone()
 
 

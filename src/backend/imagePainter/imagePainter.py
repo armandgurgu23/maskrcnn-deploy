@@ -1,12 +1,15 @@
 import PIL
-from PIL import ImageDraw, ImageFont, ImageOps
+from PIL import ImageDraw, ImageFont, ImageOps, Image
 import random
 from torchvision.transforms import ToPILImage
 from imagePainter.maskProcessor.maskProcessor import MaskProcessor
 
 
 class ImagePainter(object):
-    def __init__(self, boxWidth, textPixelShiftWidth, textPixelShiftHeight, textStrokeWidth, colorChoice, colorFilePath, fontSize, fontName, fontRefWidth):
+    def __init__(self, boxWidth, textPixelShiftWidth, textPixelShiftHeight,
+                 textStrokeWidth, colorChoice,
+                 colorFilePath, fontSize, fontName, fontRefWidth,
+                 applyMaskProcessor, objectTransparencyFactor, processorMethod):
         self.boxWidth = boxWidth
         self.textPixelShiftWidth = textPixelShiftWidth
         self.textPixelShiftHeight = textPixelShiftHeight
@@ -14,6 +17,9 @@ class ImagePainter(object):
         self.colorChoice = colorChoice
         self.colorFilePath = colorFilePath
         self.fontSize = fontSize
+        self.applyMaskProcessor = applyMaskProcessor
+        self.processorMethod = processorMethod
+        self.objectTransparencyFactor = objectTransparencyFactor
         self.fontName = fontName
         self.torchToPILConverter = ToPILImage()
         self.fontRefWidth = fontRefWidth
@@ -26,34 +32,51 @@ class ImagePainter(object):
             # We assign a uniform color to
             # be used for drawing.
             self.colorSpace = self.colorChoice
+        if self.applyMaskProcessor:
+            self.maskProcessor = MaskProcessor(
+                self.objectTransparencyFactor)
 
     def __call__(self, imageList, predictionData, predictorType):
         if predictorType == 'segmentor':
-            paintedImage = self.drawMaskPredictionsOnImages(imageList, predictionData)
-            return paintedImage
+            return self.drawMaskPredictionsOnImages(imageList, predictionData)
         else:
-            self.drawBoxPredictionsOnImages(imageList, predictionData)
-            return
-        
+            return self.drawBoxPredictionsOnImages(imageList, predictionData)
+
     def drawMaskPredictionsOnImages(self, imageList, predictionData):
         paintedImages = []
         for imageIndex, currImage in enumerate(imageList):
             currDrawColor = self.colorSampler()
             imagePredictions = predictionData[imageIndex]
-            self.drawObjectMasksAndClasses(imagePredictions[0], imagePredictions[1], currDrawColor, currImage)
-        raise NotImplementedError('Inside image painter! Preparing to draw masks!')
+            currImage = self.drawObjectMasksAndClasses(
+                imagePredictions[0], imagePredictions[1], currDrawColor, currImage)
+            paintedImages.append(currImage)
+        return paintedImages
 
     def drawObjectMasksAndClasses(self, objectMasks, objectClasses, drawColor, currImage):
         for currMaskIndex in range(objectMasks.size()[0]):
-            currObjectMask = objectMasks[currMaskIndex,:,:,:]
-            currImage = self.drawObjectMask(currObjectMask, currImage, drawColor)
-        return
-    
-    def drawObjectMask(self,currMask, currImage, drawColor):
+            currObjectMask = objectMasks[currMaskIndex, :, :, :]
+            currImage = self.drawObjectMask(
+                currObjectMask, currImage, drawColor)
+        return currImage
+
+    def drawObjectMask(self, currMask, currImage, drawColor):
         currMaskPIL = self.transformMaskToPILImage(currMask)
         coloredMask = self.applyColorToObjectMask(currMaskPIL, drawColor)
-        coloredMask.show()
-        return
+        transparencyMask = self.deriveTransparencyMapFromMask(
+            currMask, self.processorMethod)
+        return self.blendImageAndColoredObjectMask(currImage, coloredMask, transparencyMask)
+
+    def blendImageAndColoredObjectMask(self, currImage, coloredMask, transparencyMask):
+        # Performs alpha blending using specified transparency mask.
+        return Image.composite(currImage, coloredMask, transparencyMask)
+
+    def deriveTransparencyMapFromMask(self, currMask, processorMethod):
+        if hasattr(self, 'maskProcessor'):
+            transparencyMask = self.maskProcessor(currMask, processorMethod)
+        else:
+            transparencyMask = currMask
+        transparencyMask = self.transformMaskToPILImage(transparencyMask)
+        return transparencyMask
 
     def applyColorToObjectMask(self, currMask, drawColor):
         # We can set the pixels corresponding to the background pixels
@@ -61,13 +84,13 @@ class ImagePainter(object):
         # regions to be opaque in the alpha blending process.
         return ImageOps.colorize(currMask, black='white', white=drawColor)
 
-    def transformMaskToPILImage(self,currMask):
+    def transformMaskToPILImage(self, currMask):
         return self.torchToPILConverter(currMask)
-    
+
     def initializeTextFontConfig(self, fontName, fontSize):
         return ImageFont.truetype(fontName, fontSize)
-    
-    def computeDynamicTextFontConfig(self,fontName,fontSize,fontRefWidth, imageWidth):
+
+    def computeDynamicTextFontConfig(self, fontName, fontSize, fontRefWidth, imageWidth):
         # Code to setup the text font object settings was borrowed from here:
         # https://stackoverflow.com/questions/4902198/pil-how-to-scale-text-size-in-relation-to-the-size-of-the-image
         scaledFontSize = int((imageWidth * fontSize) / fontRefWidth)
@@ -80,20 +103,25 @@ class ImagePainter(object):
             currCanvas = ImageDraw.Draw(currImage)
             imagePredData = predictionData[imageIndex]
             # To Do: Complete logic in this function.
-            self.drawPredictionsOnCanvas(currCanvas, imagePredData, currDrawColor, imageResolution)
-        return
+            self.drawPredictionsOnCanvas(
+                currCanvas, imagePredData, currDrawColor, imageResolution)
+        return imageList
 
     def drawPredictionsOnCanvas(self, currCanvas, predictionData, currDrawColor, currResolution):
         predictedBoxes = predictionData[0]
         predictedClasses = predictionData[1]
         for indexPred, currBox in enumerate(predictedBoxes):
             leftCorner = self.extractLeftCornerCoordinates(currBox)
-            leftCorner = self.applyPixelShiftToTextCoordinates(leftCorner, self.textPixelShiftHeight, self.textPixelShiftWidth, currResolution)
-            self.drawBoundingBox(currCanvas, currBox, currDrawColor, currResolution)
+            leftCorner = self.applyPixelShiftToTextCoordinates(
+                leftCorner, self.textPixelShiftHeight, self.textPixelShiftWidth, currResolution)
+            self.drawBoundingBox(currCanvas, currBox,
+                                 currDrawColor, currResolution)
             predClass = predictedClasses[indexPred]
             # print('Pred index {} has class {}'.format(indexPred, predClass))
-            fontObject = self.computeDynamicTextFontConfig(fontName=self.fontName, fontSize=self.fontSize, fontRefWidth=self.fontRefWidth, imageWidth=currResolution[0])
-            self.drawPredictedClassForBox(predClass, leftCorner, currCanvas, currDrawColor, currResolution, fontObject)
+            fontObject = self.computeDynamicTextFontConfig(
+                fontName=self.fontName, fontSize=self.fontSize, fontRefWidth=self.fontRefWidth, imageWidth=currResolution[0])
+            self.drawPredictedClassForBox(
+                predClass, leftCorner, currCanvas, currDrawColor, currResolution, fontObject)
         return
 
     def applyPixelShiftToTextCoordinates(self, corner, pixelShiftHeight, pixelShiftWidth, currResolution):

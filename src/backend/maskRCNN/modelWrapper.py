@@ -9,7 +9,8 @@ class MaskRCNNModelWrapper(object):
         # Get the list of prediction classes for mapping the prediction
         # indexes to the semantic class name.
         self.classesArray = self.getModelPredictionClasses(self.classesPath)
-        self.maskRCNNModel = self.initializeMaskRCNNModel(self.pretrained, self.minSize)
+        self.maskRCNNModel = self.initializeMaskRCNNModel(
+            self.pretrained, self.minSize)
         # Set the pretrained model in inference mode since model
         # uses batch normalization.
         self.maskRCNNModel.eval()
@@ -30,8 +31,8 @@ class MaskRCNNModelWrapper(object):
             return self.extractMasksAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
         else:
             return self.extractBoxesAndLabels(validPredictionData, rawPredictions, confidenceThreshold)
-    
-    def extractMasksAndLabels(self,validPredictionData, rawPredictions, confidenceThreshold):
+
+    def extractMasksAndLabels(self, validPredictionData, rawPredictions, confidenceThreshold):
         if len(rawPredictions) == 1:
             singlePredictionData = self.extractSingleInstanceBoxesAndLabels(
                 rawPredictions[0], confidenceThreshold, 'masks')
@@ -68,9 +69,11 @@ class MaskRCNNModelWrapper(object):
         # Need to convert boxes from float to int in order to
         # draw them on the images.
         if predictionType == 'boxes':
-            validPredictions = singlePrediction[predictionType][predIndexMask].int().detach().tolist()
+            validPredictions = singlePrediction[predictionType][predIndexMask].int(
+            ).detach().tolist()
         else:
-            validPredictions = singlePrediction[predictionType][predIndexMask, :,:,:].detach()
+            validPredictions = singlePrediction[predictionType][predIndexMask, :, :, :].detach(
+            )
         validClassIndexes = singlePrediction['labels'][predIndexMask].tolist()
         validClassNames = self.mapClassIndexesToClassNames(validClassIndexes)
         return validPredictions, validClassNames

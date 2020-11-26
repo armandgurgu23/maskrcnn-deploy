@@ -11,4 +11,5 @@ imagePainter:
   objectMasks:
     applyMaskProcessor: True
     objectTransparencyFactor: 0.5
+    processorMethod: 'padConstant'
 

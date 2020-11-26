@@ -11,7 +11,7 @@ modelService = ModelServer()
 
 def getApplicationLogger():
     # We use the built-in uvicorn logger that comes
-    # out of the box when setting up a FastAPI 
+    # out of the box when setting up a FastAPI
     # server.
     return logging.getLogger("uvicorn.info")
 
@@ -35,19 +35,23 @@ def fetchServerAllowedOrigins():
         allowedOrigins = ['*']
     return allowedOrigins
 
+
 def setupCORSMiddleware(server):
     allowedOrigins = fetchServerAllowedOrigins()
     # Can specify certain types of HTTP methods to allow (ie: just POST/GET etc.)
     # As well as different credentials like authorization headers/cookies etc.
     # Same applies for HTTP headers.
-    applicationLogger.info('Origins allowed to access backend: {}'.format(allowedOrigins))
+    applicationLogger.info(
+        'Origins allowed to access backend: {}'.format(allowedOrigins))
     server.add_middleware(CORSMiddleware, allow_origins=allowedOrigins,
-                                          allow_credentials=True,
-                                          allow_methods=["*"],
-                                          allow_headers=["*"])
+                          allow_credentials=True,
+                          allow_methods=["*"],
+                          allow_headers=["*"])
     return
 
+
 setupCORSMiddleware(server)
+
 
 @server.get('/healthcheck')
 def healthcheck():
@@ -62,6 +66,7 @@ def healthcheck():
 </body>
     """
     return HTMLResponse(htmlContent)
+
 
 @server.get('/')
 def root():
@@ -87,5 +92,6 @@ def runObjectDetector(imageFile: UploadFile = File(...)):
 def runObjectSegmentor(imageFile: UploadFile = File(...)):
     applicationLogger.info('Handling a segmentor request!')
     imageExtension = imageFile.content_type.split('/')[-1]
-    predictionsImage = modelService(imageFile.file, imageExtension, 'segmentor')
+    predictionsImage = modelService(
+        imageFile.file, imageExtension, 'segmentor')
     return StreamingResponse(predictionsImage, media_type=imageFile.content_type)
