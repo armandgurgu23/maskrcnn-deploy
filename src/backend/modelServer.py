@@ -70,4 +70,6 @@ class ModelServer(object):
                             applyMaskProcessor=painterConfig.imagePainter.objectMasks.applyMaskProcessor,
                             processorMethod=painterConfig.imagePainter.objectMasks.processorMethod,
                             objectTransparencyFactor=painterConfig.imagePainter.objectMasks.objectTransparencyFactor,
-                            fontRefWidth=painterConfig.imagePainter.fontRefWidth)
+                            fontRefWidth=painterConfig.imagePainter.fontRefWidth,
+                            maskTextShiftHeight=painterConfig.imagePainter.objectMasks.maskTextShiftHeight,
+                            maskTextShiftWidth=painterConfig.imagePainter.objectMasks.maskTextShiftWidth)

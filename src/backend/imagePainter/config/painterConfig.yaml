@@ -12,4 +12,6 @@ imagePainter:
     applyMaskProcessor: True
     objectTransparencyFactor: 0.5
     processorMethod: 'padConstant'
+    maskTextShiftWidth: 0.009
+    maskTextShiftHeight: 0.058
 

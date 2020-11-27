@@ -1,6 +1,7 @@
 import PIL
 from PIL import ImageDraw, ImageFont, ImageOps, Image
 import random
+import torch
 from torchvision.transforms import ToPILImage
 from imagePainter.maskProcessor.maskProcessor import MaskProcessor
 
@@ -9,13 +10,16 @@ class ImagePainter(object):
     def __init__(self, boxWidth, textPixelShiftWidth, textPixelShiftHeight,
                  textStrokeWidth, colorChoice,
                  colorFilePath, fontSize, fontName, fontRefWidth,
-                 applyMaskProcessor, objectTransparencyFactor, processorMethod):
+                 applyMaskProcessor, objectTransparencyFactor, processorMethod,
+                 maskTextShiftWidth, maskTextShiftHeight):
         self.boxWidth = boxWidth
         self.textPixelShiftWidth = textPixelShiftWidth
         self.textPixelShiftHeight = textPixelShiftHeight
         self.textStrokeWidth = textStrokeWidth
         self.colorChoice = colorChoice
         self.colorFilePath = colorFilePath
+        self.maskTextShiftHeight = maskTextShiftHeight
+        self.maskTextShiftWidth = maskTextShiftWidth
         self.fontSize = fontSize
         self.applyMaskProcessor = applyMaskProcessor
         self.processorMethod = processorMethod
@@ -55,9 +59,31 @@ class ImagePainter(object):
     def drawObjectMasksAndClasses(self, objectMasks, objectClasses, drawColor, currImage):
         for currMaskIndex in range(objectMasks.size()[0]):
             currObjectMask = objectMasks[currMaskIndex, :, :, :]
+            drawPosition = self.findObjectMaskLeftCorner(currObjectMask)
             currImage = self.drawObjectMask(
                 currObjectMask, currImage, drawColor)
+            currCanvas = ImageDraw.Draw(currImage)
+            self.drawClassNameAtPosition(
+                drawPosition, currImage.size, objectClasses[currMaskIndex], currCanvas,
+                drawColor, self.maskTextShiftHeight, self.maskTextShiftWidth)
         return currImage
+
+    def findObjectMaskLeftCorner(self, objectMask):
+        objectMaskGrid = torch.squeeze(objectMask, dim=0)
+        conditionMask = objectMaskGrid > 1e-5
+        indexesMask = torch.where(conditionMask)
+        minSizeFirstDim = int(indexesMask[0].min())
+        minSizeSecondDim = int(indexesMask[1].min())
+        return minSizeSecondDim, minSizeFirstDim
+
+    def drawClassNameAtPosition(self, position, currResolution, className, currCanvas, currDrawColor, pixelShiftHeight, pixelShiftWidth):
+        position = self.applyPixelShiftToTextCoordinates(
+            position, pixelShiftHeight, pixelShiftWidth, currResolution)
+        fontObject = self.computeDynamicTextFontConfig(
+            fontName=self.fontName, fontSize=self.fontSize, fontRefWidth=self.fontRefWidth, imageWidth=currResolution[0])
+        self.drawPredictedClassForBox(
+            className, position, currCanvas, currDrawColor, currResolution, fontObject)
+        return
 
     def drawObjectMask(self, currMask, currImage, drawColor):
         currMaskPIL = self.transformMaskToPILImage(currMask)

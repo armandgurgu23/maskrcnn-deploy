@@ -26,6 +26,8 @@ class ConfigDefaults(object):
         _config.imagePainter.objectMasks.applyMaskProcessor = False
         _config.imagePainter.objectMasks.objectTransparencyFactor = 0.1
         _config.imagePainter.objectMasks.processorMethod = ''
+        _config.imagePainter.objectMasks.maskTextShiftWidth = 0.1
+        _config.imagePainter.objectMasks.maskTextShiftHeight = 0.1
         return _config.clone()
 
 
