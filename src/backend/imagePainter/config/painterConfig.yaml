@@ -8,3 +8,10 @@ imagePainter:
   fontRefWidth: 1000
   colorChoice: 'random'
   colorFile: 'imagePainter/config/painterColors.txt'
+  objectMasks:
+    applyMaskProcessor: True
+    objectTransparencyFactor: 0.5
+    processorMethod: 'constantScaling'
+    maskTextShiftWidth: 0.009
+    maskTextShiftHeight: 0.058
+

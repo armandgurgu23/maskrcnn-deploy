@@ -1,6 +1,17 @@
-#predictionButton {
+#predictionButtonDetector {
     width: 8%;
     position: absolute;
+    left: 1020px;
+    top: 720px;
     background-color: yellow;
+    z-index: 1;
+}
+
+#predictionButtonSegmentor {
+    width: 9%;
+    position: relative;
+    background-color: yellow;
+    left: -150px;
+    top: 15px;
     z-index: -1;
 }

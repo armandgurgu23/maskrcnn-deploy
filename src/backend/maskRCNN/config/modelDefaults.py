@@ -24,6 +24,6 @@ class ConfigDefaults(object):
         return _config.clone()
 
 
-def getDetectorYamlConfig(yamlFilePath='detector/config/detectorConfig.yaml'):
+def getModelYamlConfig(yamlFilePath='maskRCNN/config/modelConfig.yaml'):
     configObject = ConfigDefaults()
     return configObject(yamlFilePath)

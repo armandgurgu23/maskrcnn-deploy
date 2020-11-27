@@ -2,7 +2,7 @@ detectorModel:
   minSize: 400
   staticPredictions: False
   confidenceThreshold: 0.9
-  predictionClassesPath: 'detector/config/detectorClasses.txt'
+  predictionClassesPath: 'maskRCNN/config/modelClasses.txt'
   staticPredictionsConfig:
     staticPredictionsInputPath: 'sampleImages/'
     staticPredictionsOutputPath: 'outputImages/'

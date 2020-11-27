@@ -9,14 +9,18 @@ class PredictionFetcher extends React.Component {
         //TO-DO: move these to a JSON configuration file
         //later.
         this.modelBackendIP = 'http://localhost:6969';
-        this.serverPath = '/uploadImage';
+        this.detectorPath = '/detector';
+        this.segmentorPath = '/segmentor';
     }
 
-    renderPredictionButton = () => {
-        return <div id='Prediction Fetcher'> 
-                    <form onSubmit={this.handleFormSubmit}>
-                        <button id='predictionButton' type='submit'> Run Object Detector </button>
+    renderPredictionButtons = () => {
+        return <div id='Prediction Fetchers'> 
+                    <form onSubmit={this.handleDetectorFormSubmit}>
+                        <button id='predictionButtonDetector' type='submit'> Run Object Detector </button>
                     </form> 
+                    <form onSubmit={this.handleSegmentorFormSubmit}>
+                        <button id='predictionButtonSegmentor' type='submit'> Run Object Segmentor </button>
+                    </form>
             </div>;
         }
 
@@ -47,12 +51,22 @@ class PredictionFetcher extends React.Component {
         this.setState({predictionsImage:response.data, predictionsName:this.props.imageFile.name})
     }
 
-    handleFormSubmit = (event) => {
-        console.log('Detected a form submit! Event = ', event);
+    handleDetectorFormSubmit = (event) => {
+        console.log('Detected a detector form submit! Event = ', event);
         //We are disabling the form element's default submission behaviour
         //and allowing axios to handle the communication for simplicity.
         event.preventDefault();
-        let backendURL = this.getBackendURL(this.modelBackendIP, this.serverPath);
+        let backendURL = this.getBackendURL(this.modelBackendIP, this.detectorPath);
+        let payloadInfo = this.packageImageAsFormData(this.props.imageFile);
+        this.sendImageToServer(payloadInfo.form, backendURL, payloadInfo.config);
+    }
+
+    handleSegmentorFormSubmit = (event) => {
+        console.log('Detected a segmentor form submit! Event = ', event);
+        //We are disabling the form element's default submission behaviour
+        //and allowing axios to handle the communication for simplicity.
+        event.preventDefault();
+        let backendURL = this.getBackendURL(this.modelBackendIP, this.segmentorPath);
         let payloadInfo = this.packageImageAsFormData(this.props.imageFile);
         this.sendImageToServer(payloadInfo.form, backendURL, payloadInfo.config);
     }
@@ -80,7 +94,7 @@ class PredictionFetcher extends React.Component {
     }
 
     render() {
-        return this.renderPredictionButton();
+        return this.renderPredictionButtons();
     }
 }
 

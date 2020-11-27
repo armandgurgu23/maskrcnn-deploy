@@ -40,7 +40,8 @@ class ImageHandler(object):
 
     def runStaticPredictionsHandler(self, staticPredictionsPath):
         imagePaths = self.getImageFilenamesFromPath(staticPredictionsPath)
-        imageObjects = self.openImagesFromImageFiles(imagePaths, staticPredictionsPath)
+        imageObjects = self.openImagesFromImageFiles(
+            imagePaths, staticPredictionsPath)
         imageObjects = self.preprocessPILImages(imageObjects)
         return imageObjects
 
