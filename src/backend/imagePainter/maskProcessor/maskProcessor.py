@@ -15,7 +15,9 @@ class MaskProcessor(object):
     def applyConstantScalingToObjectMaskHandler(self, objectMask):
         # We will try a scaling of the form factor * x where
         # x represents non-zero intensities.
-        raise NotImplementedError('Insert log')
+        newObjectMask = objectMask * self.transparencyFactor
+        newObjectMask = 1.0 - newObjectMask
+        return newObjectMask
 
     def padConstantToObjectMaskHandler(self, objectMask):
         objectMask[objectMask > 0.0] = self.transparencyFactor
