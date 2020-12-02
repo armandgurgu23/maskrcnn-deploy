@@ -4,14 +4,14 @@ This repository can be used to visualize predictions by an object detection and 
 
 <h2> Demo of Code </h2>
 
-
+A [video demonstration](https://www.youtube.com/watch?v=xgXu-N72VCk&ab_channel=TechWithArmand) of how this application works is available on Youtube. Since this project is ongoing, the video demonstration will be updated on Youtube to reflect the addition of major features on the frontend, backend or application deployment code.
 
 
 <h2> TO-DO </h2>
 
 - [x] Implement Mask-RCNN model inference route using FastAPI and PyTorch.
 - [x] Implement browser front end using ReactJS and Axios.
-- [ ] Add object segmentor route and render inference on front end.
+- [x] Add object segmentor route and render inference on front end.
 - [ ] Set up Dockerfiles for front end and back end.
 
 
