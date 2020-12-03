@@ -6,6 +6,7 @@ from modelServer import ModelServer
 import logging
 import uvicorn
 import argparse
+
 # Create the FastAPI application server.
 server = FastAPI()
 
@@ -102,11 +103,18 @@ def getApplicationStartUpArgs():
     args = parser.parse_args()
     return args
 
+# TO-DO (debug): For some reason moving these global variables under
+# name == main causes them to not be accessible within FastAPIs routes
+# However these global variables are initialized twice in here
+# compared to once under the name == main block.
+
+
+modelService = ModelServer()
+applicationLogger = getApplicationLogger()
+setupCORSMiddleware(server)
+applicationArgs = getApplicationStartUpArgs()
+
 
 if __name__ == "__main__":
-    modelService = ModelServer()
-    applicationLogger = getApplicationLogger()
-    setupCORSMiddleware(server)
-    applicationArgs = getApplicationStartUpArgs()
     uvicorn.run("applicationServer:server", host=applicationArgs.host,
                 port=applicationArgs.port)
