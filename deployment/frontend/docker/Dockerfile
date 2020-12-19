@@ -8,4 +8,4 @@ COPY src/frontend /src/app
 WORKDIR /src/app
 RUN npm install
 EXPOSE 3000
-ENTRYPOINT ["../appEntrypoint.sh"]
+ENTRYPOINT ["sh", "/src/appEntrypoint.sh"]
