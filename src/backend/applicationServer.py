@@ -4,9 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from modelServer import ModelServer
 import logging
+import uvicorn
+import argparse
+
 # Create the FastAPI application server.
 server = FastAPI()
-modelService = ModelServer()
 
 
 def getApplicationLogger():
@@ -15,8 +17,6 @@ def getApplicationLogger():
     # server.
     return logging.getLogger("uvicorn.info")
 
-
-applicationLogger = getApplicationLogger()
 
 # A list of all the front-end origins that are allowed to access the server.
 # We choose them depending on the development mode flag:
@@ -48,9 +48,6 @@ def setupCORSMiddleware(server):
                           allow_methods=["*"],
                           allow_headers=["*"])
     return
-
-
-setupCORSMiddleware(server)
 
 
 @server.get('/healthcheck')
@@ -95,3 +92,29 @@ def runObjectSegmentor(imageFile: UploadFile = File(...)):
     predictionsImage = modelService(
         imageFile.file, imageExtension, 'segmentor')
     return StreamingResponse(predictionsImage, media_type=imageFile.content_type)
+
+
+def getApplicationStartUpArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--host", type=str, help="The URL of the application host. Defaults to localhost.", default="localhost")
+    parser.add_argument(
+        "--port", type=int, help="The host server machine port to run the application on.", default=6969)
+    args = parser.parse_args()
+    return args
+
+# TO-DO (debug): For some reason moving these global variables under
+# name == main causes them to not be accessible within FastAPIs routes
+# However these global variables are initialized twice in here
+# compared to once under the name == main block.
+
+
+modelService = ModelServer()
+applicationLogger = getApplicationLogger()
+setupCORSMiddleware(server)
+applicationArgs = getApplicationStartUpArgs()
+
+
+if __name__ == "__main__":
+    uvicorn.run("applicationServer:server", host=applicationArgs.host,
+                port=applicationArgs.port)

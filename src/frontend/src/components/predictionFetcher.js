@@ -6,23 +6,25 @@ class PredictionFetcher extends React.Component {
     constructor(props) {
         super(props);
         this.state = null;
-        //TO-DO: move these to a JSON configuration file
-        //later.
-        this.modelBackendIP = 'http://localhost:6969';
-        this.detectorPath = '/detector';
-        this.segmentorPath = '/segmentor';
+        //To access environment variables within a React application
+        //created using create react app just add "REACT_APP_" to
+        //the environment variable name and access using process.env
+        //just like below.
+        this.modelBackendIP = process.env.REACT_APP_BACKEND_IP;
+        this.detectorPath = process.env.REACT_APP_DETECTOR_ROUTE;
+        this.segmentorPath = process.env.REACT_APP_SEGMENTOR_ROUTE;
     }
 
     renderPredictionButtons = () => {
-        return <div id='Prediction Fetchers'> 
-                    <form onSubmit={this.handleDetectorFormSubmit}>
-                        <button id='predictionButtonDetector' type='submit'> Run Object Detector </button>
-                    </form> 
-                    <form onSubmit={this.handleSegmentorFormSubmit}>
-                        <button id='predictionButtonSegmentor' type='submit'> Run Object Segmentor </button>
-                    </form>
-            </div>;
-        }
+        return <div id='Prediction Fetchers'>
+            <form onSubmit={this.handleDetectorFormSubmit}>
+                <button id='predictionButtonDetector' type='submit'> Run Object Detector </button>
+            </form>
+            <form onSubmit={this.handleSegmentorFormSubmit}>
+                <button id='predictionButtonSegmentor' type='submit'> Run Object Segmentor </button>
+            </form>
+        </div>;
+    }
 
     packageImageAsFormData = (imageFile) => {
         //To send an image to a backend server
@@ -41,14 +43,14 @@ class PredictionFetcher extends React.Component {
             },
             responseType: 'blob'
         }
-        const payloadInfo = {form: imageFormWrapper, config: payloadConfig}
+        const payloadInfo = { form: imageFormWrapper, config: payloadConfig }
         return payloadInfo;
     }
 
     sendImageToServer = async (imageForm, backendURL, requestHeader) => {
         let response = await axios.post(backendURL, imageForm, requestHeader);
         console.log('Axios response: ', response);
-        this.setState({predictionsImage:response.data, predictionsName:this.props.imageFile.name})
+        this.setState({ predictionsImage: response.data, predictionsName: this.props.imageFile.name })
     }
 
     handleDetectorFormSubmit = (event) => {
@@ -57,6 +59,7 @@ class PredictionFetcher extends React.Component {
         //and allowing axios to handle the communication for simplicity.
         event.preventDefault();
         let backendURL = this.getBackendURL(this.modelBackendIP, this.detectorPath);
+        console.log('Detector endpoint to dispatch request to: ', backendURL)
         let payloadInfo = this.packageImageAsFormData(this.props.imageFile);
         this.sendImageToServer(payloadInfo.form, backendURL, payloadInfo.config);
     }
@@ -67,6 +70,7 @@ class PredictionFetcher extends React.Component {
         //and allowing axios to handle the communication for simplicity.
         event.preventDefault();
         let backendURL = this.getBackendURL(this.modelBackendIP, this.segmentorPath);
+        console.log('Segmentor endpoint to dispatch request to: ', backendURL)
         let payloadInfo = this.packageImageAsFormData(this.props.imageFile);
         this.sendImageToServer(payloadInfo.form, backendURL, payloadInfo.config);
     }
@@ -82,7 +86,7 @@ class PredictionFetcher extends React.Component {
         // It runs after render().
         console.log('Prediction Fetcher component did update keeps RUN!')
         if (this.state) {
-            if (!prevState){
+            if (!prevState) {
                 this.props.imageRenderCallback(this.state.predictionsImage);
             }
             else {
